@@ -61,11 +61,11 @@ class Renderer:
 
         self.faces = [
             ([4, 5, 6, 7], green),  # Front
-            ([0, 1, 2, 3], blue),   # Back
-            ([2, 3, 6, 7], white),  # Top
-            ([0, 1, 4, 5], yellow), # Bottom 
-            ([1, 2, 5, 6], red),    # Right
-            ([0, 3, 4, 7], orange), # Left
+            ([3, 2, 1, 0], blue),   # Back
+            ([3, 7, 6, 2], white),  # Top
+            ([5, 4, 0, 1], yellow), # Bottom 
+            ([6, 5, 1, 2], red),    # Right
+            ([3, 0, 4, 7], orange), # Left
         ]
     
     def project_point(self, point):
@@ -89,6 +89,18 @@ class Renderer:
             projected.append(projected_point)
         
         for points, colour in self.faces:
+            rotated_points = []
+            for point in points[0:3]:
+                rotated_point = rotated[point]
+                rotated_points.append(rotated_point)
+
+            vector1 = rotated_points[1] - rotated_points[0]
+            vector2 = rotated_points[2] - rotated_points[0]
+            normal_vector = np.cross(vector1, vector2)
+
+            if normal_vector[2] <= 0:
+                continue
+
             vertices = []
             for point in points:
                 projected_point = projected[point]

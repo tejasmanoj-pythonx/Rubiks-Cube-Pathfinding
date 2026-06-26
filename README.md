@@ -1,5 +1,12 @@
 # Rubiks-Cube-Pathfinding
 
+Sources:<br>
+https://en.wikipedia.org/wiki/Rotation_matrix<br>
+https://en.wikipedia.org/wiki/3D_projection#Perspective_projection<br>
+https://www.cube20.org/
+https://www.cube20.org/<br>
+https://en.wikipedia.org/wiki/Cross_product
+
 Rubiks Cube in General<br>
 The total amount of permutations for a rubiks cube is ~4.3 x 10^19 which is about 4 quintillion.<br>
 Proven maximum of 20 moves to solve any scambled cube from any state (God's Number).<br>
@@ -46,7 +53,7 @@ screen_x = (x / (camera_z - z)) * FOV + screen_width / 2<br>
 screen_y = (y / (camera_z - z)) * FOV + screen_height / 2<br>
 Where camera_z - z is the distance between the camera and the point along the depth axis.<br>
 FOV is how zoomed in things would look.<br>
-screen_width / 2 and screen_height / 2 are so that the coordinates (0,0) are shifted to the center of the screen instead of the top left corner set by pygame.<br><br>
+The screen_width / 2 and screen_height / 2 are so that the coordinates (0,0) are shifted to the center of the screen instead of the top left corner set by pygame.<br><br>
 2. Rotation Matrices<br>
 The cube needs to spin so that the user can see all angles, meaning that all the vertices need to be rotated before being projected.<br>
 The formula for each axis is given as:<br>
@@ -59,3 +66,11 @@ y = [cos(a) 0 sin(a)]
 z = [cos(a) -sin(a) 0]
     [sin(a) cos(a) 0]
     [0 0 1]<br><br>
+3. How to Fix Faces Bleeding On Eachother (Back-Face Culling)<br>
+A cube has 6 faces, but when viewing it from any angle, at most 3 of them can ever be visible to the camera.<br> The other 3 faces are facing away from the camera and are on the far side.<br> By drawing all 6 faces, the ones facing away end up showing through as pygame doesn't understand that this shape is behind another shape in 3D.<br> It would just draw the shape in whatever order that it is programmed to, flat on the screen.<br>
+Back-face culling solves this by not drawing the faces that are hidden to the camera and only rendering the ones that are visible.<br><br>
+Every face of the cube has a normal vector, which is a direction perpindicular to the face's surface that points straight outwards from it.<br> If we imagine a 3D plane, the front face's normal would point toward the positive z direction, the top face's normal would point towards positive y and the right face's would point towards positive x.<br> Every face has only point vector pointing outward.<br><br>
+If a face's normal was pointing roughly towards the camera, then the camera is looking at the front of that face meaning that it should be drawn. If the normal was pointing roughly away from the camera, then the camera is looking away from the face meaning it shouldn't be drawn.<br><br>
+A face is made from 4 points, meaning that between each point is an edge.<br> If you were to take two of these edges as vectors and calculate their cross product, you would result with a vector that is perpindicular to both.<br> This new vector is the face's normal direction.<br> Of the four points only three will be needed as one point needs to be shared as both vectors will orginate from it.<br><br>
+The cross product's direction depends on the order that the two edges are fed in.<br> By swapping the order the normal will point in the opposite direction.<br> This means that I have to be consistent in the order of vectors I am using for each face otherwise the normal will be pointing in the wrong way.<br><br>
+Besides just fixing the face bleeding problem, culling faces also means that about half of them will never need to be projected of drawn at a given time.<br> For a single cube like right now, it might not be that much of a difference but once it becomes 27 of them it does become a meaningful optimisation.
