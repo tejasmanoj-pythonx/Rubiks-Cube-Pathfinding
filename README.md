@@ -57,5 +57,5 @@ y = [cos(a) 0 sin(a)]
     [0 1 0]
     [-sin(a) 0 cos(a)]<br>
 z = [cos(a) -sin(a) 0]
-        [sin(a) cos(a) 0]
-        [0 0 1]<br><br>
+    [sin(a) cos(a) 0]
+    [0 0 1]<br><br>
