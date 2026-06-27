@@ -88,6 +88,7 @@ class Renderer:
             projected_point = self.project_point(vertex)
             projected.append(projected_point)
         
+        visible_faces = []
         for points, colour in self.faces:
             rotated_points = []
             for point in points[0:3]:
@@ -101,10 +102,21 @@ class Renderer:
             if normal_vector[2] <= 0:
                 continue
 
+            z_total = 0
+            for point in points:
+                z_total = z_total + rotated[point][2]
+            z_average = z_total / 4
+
+
             vertices = []
             for point in points:
                 projected_point = projected[point]
                 vertices.append(projected_point)
+            visible_faces.append((colour, vertices, z_average))
+        
+        visible_faces.sort(key=lambda depth: depth[2])
+
+        for colour, vertices, z_average in visible_faces:
             pygame.draw.polygon(self.screen, colour, vertices)
         
         pygame.display.update()
