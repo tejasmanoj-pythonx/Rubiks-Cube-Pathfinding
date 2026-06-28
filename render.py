@@ -43,6 +43,9 @@ def rotate_z(angle):
 
 class Cubie:
     def __init__(self, grid_position):
+        x = grid_position[0]
+        y = grid_position[1]
+        z = grid_position[2]
 
         self.vertices = np.array([
             [-1, -1, -1],
@@ -57,16 +60,41 @@ class Cubie:
 
         self.vertices = (self.vertices * cube_scale) + grid_position
 
-        self.faces = [
-            ([4, 5, 6, 7], green),  # Front
-            ([3, 2, 1, 0], blue),   # Back
-            ([3, 7, 6, 2], white),  # Top
-            ([5, 4, 0, 1], yellow), # Bottom 
-            ([6, 5, 1, 2], red),    # Right
-            ([3, 0, 4, 7], orange), # Left
-        ]
+        if x == 1:
+            right = red
+        else:
+            right = black
+        if x == -1:
+            left = orange
+        else:
+            left = black
 
-        
+        if y == 1:
+            top = white
+        else:
+            top = black   
+        if y == -1:
+            bottom = yellow
+        else:
+            bottom = black
+
+        if z == 1:
+            front = green
+        else:
+            front = black   
+        if z == -1:
+            back = blue
+        else:
+            back = black
+
+        self.faces = [
+            ([4, 5, 6, 7], front),  # Front
+            ([3, 2, 1, 0], back),   # Back
+            ([3, 7, 6, 2], top),  # Top
+            ([5, 4, 0, 1], bottom), # Bottom 
+            ([6, 5, 1, 2], right),    # Right
+            ([3, 0, 4, 7], left), # Left
+        ]
 
 class Renderer:
     def __init__(self, screen):
