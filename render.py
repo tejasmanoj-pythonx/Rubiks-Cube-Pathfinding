@@ -12,8 +12,9 @@ blue = (0, 50, 150)
 yellow = (255, 215, 10)
 orange = (255, 135, 35)
 
-camera_distance = 5
+camera_distance = 6
 fov = 300
+cube_scale = 0.45
 
 # Rotation Matrices
 def rotate_x(angle):
@@ -40,13 +41,8 @@ def rotate_z(angle):
     ])
     return z_rotation
 
-class Renderer:
-    def __init__(self, screen):
-        self.screen = screen
-        self.screen_width = pygame.display.get_window_size()[0]
-        self.screen_height = pygame.display.get_window_size()[1]
-
-        self.rotation = np.eye(3) # 3x3 Identity Matrix
+class Cubie:
+    def __init__(self, grid_position):
 
         self.vertices = np.array([
             [-1, -1, -1],
@@ -59,6 +55,8 @@ class Renderer:
             [-1,  1,  1],
         ])
 
+        self.vertices = (self.vertices * cube_scale) + grid_position
+
         self.faces = [
             ([4, 5, 6, 7], green),  # Front
             ([3, 2, 1, 0], blue),   # Back
@@ -67,6 +65,30 @@ class Renderer:
             ([6, 5, 1, 2], red),    # Right
             ([3, 0, 4, 7], orange), # Left
         ]
+
+        
+
+class Renderer:
+    def __init__(self, screen):
+        self.screen = screen
+        self.screen_width = pygame.display.get_window_size()[0]
+        self.screen_height = pygame.display.get_window_size()[1]
+
+        self.rotation = np.eye(3) # 3x3 Identity Matrix
+
+        cubie_positions =[(-1, -1, -1), (-1, -1,  0), (-1, -1,  1),
+                          (-1,  0, -1), (-1,  1, -1), ( 0, -1, -1),
+                          ( 1, -1, -1), (-1,  0,  0), (-1,  0,  1),
+                          (-1,  1,  0), (-1,  1,  1), ( 0, -1,  0),
+                          ( 0, -1,  1), ( 0,  0, -1), ( 0,  0,  0),
+                          ( 0,  0,  1), ( 0,  1, -1), ( 0,  1,  0),
+                          ( 0,  1,  1), ( 1, -1,  0), ( 1, -1,  1),
+                          ( 1,  0, -1), ( 1,  0,  0), ( 1,  0,  1),
+                          ( 1,  1, -1), ( 1,  1,  0), ( 1,  1,  1)]
+
+        self.cubies = []
+        for position in cubie_positions:
+            self.cubies.append(Cubie(position))
     
     def project_point(self, point):
         x = point[0]
@@ -81,38 +103,40 @@ class Renderer:
     def draw_cube(self):
         self.screen.fill(bg_colour)
 
-        rotated = np.dot(self.vertices, self.rotation.T)
-
-        projected = []
-        for vertex in rotated:
-            projected_point = self.project_point(vertex)
-            projected.append(projected_point)
-        
         visible_faces = []
-        for points, colour in self.faces:
-            rotated_points = []
-            for point in points[0:3]:
-                rotated_point = rotated[point]
-                rotated_points.append(rotated_point)
+        for cubie in self.cubies:
+            rotated = np.dot(cubie.vertices, self.rotation.T)
 
-            vector1 = rotated_points[1] - rotated_points[0]
-            vector2 = rotated_points[2] - rotated_points[0]
-            normal_vector = np.cross(vector1, vector2)
+            projected = []
+            for vertex in rotated:
+                projected_point = self.project_point(vertex)
+                projected.append(projected_point)
+            
+            
+            for points, colour in cubie.faces:
+                rotated_points = []
+                for point in points[0:3]:
+                    rotated_point = rotated[point]
+                    rotated_points.append(rotated_point)
 
-            if normal_vector[2] <= 0:
-                continue
+                vector1 = rotated_points[1] - rotated_points[0]
+                vector2 = rotated_points[2] - rotated_points[0]
+                normal_vector = np.cross(vector1, vector2)
 
-            z_total = 0
-            for point in points:
-                z_total = z_total + rotated[point][2]
-            z_average = z_total / 4
+                if normal_vector[2] <= 0:
+                    continue
+
+                z_total = 0
+                for point in points:
+                    z_total = z_total + rotated[point][2]
+                z_average = z_total / 4
 
 
-            vertices = []
-            for point in points:
-                projected_point = projected[point]
-                vertices.append(projected_point)
-            visible_faces.append((colour, vertices, z_average))
+                vertices = []
+                for point in points:
+                    projected_point = projected[point]
+                    vertices.append(projected_point)
+                visible_faces.append((colour, vertices, z_average))
         
         visible_faces.sort(key=lambda depth: depth[2])
 
