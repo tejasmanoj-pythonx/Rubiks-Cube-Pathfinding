@@ -1,0 +1,174 @@
+import pygame
+import numpy as np
+import math
+
+# Colours
+bg_colour = (35, 35, 35)
+black = (0, 0, 0)
+white = (255, 255, 255)
+red = (220, 30, 30)
+green = (0, 130, 0)
+blue = (0, 50, 150)
+yellow = (255, 215, 10)
+orange = (255, 135, 35)
+
+camera_distance = 6
+fov = 300
+cube_scale = 0.45
+
+# Rotation Matrices
+def rotate_x(angle):
+    x_rotation = np.array([
+        [1, 0, 0],
+        [0, math.cos(angle), -math.sin(angle)],
+        [0, math.sin(angle), math.cos(angle)]
+    ])
+    return x_rotation
+
+def rotate_y(angle):
+    y_rotation = np.array([
+        [math.cos(angle), 0, math.sin(angle)],
+        [0, 1, 0],
+        [-math.sin(angle), 0, math.cos(angle)]
+    ])
+    return y_rotation
+
+def rotate_z(angle):
+    z_rotation = np.array([
+        [math.cos(angle), -math.sin(angle), 0],
+        [math.sin(angle), math.cos(angle), 0],
+        [0, 0, 1]
+    ])
+    return z_rotation
+
+class Cubie:
+    def __init__(self, grid_position):
+        x = grid_position[0]
+        y = grid_position[1]
+        z = grid_position[2]
+
+        self.vertices = np.array([
+            [-1, -1, -1],
+            [ 1, -1, -1],
+            [ 1,  1, -1],
+            [-1,  1, -1],
+            [-1, -1,  1],
+            [ 1, -1,  1],
+            [ 1,  1,  1],
+            [-1,  1,  1],
+        ])
+
+        self.vertices = (self.vertices * cube_scale) + grid_position
+
+        if x == 1:
+            right = red
+        else:
+            right = black
+        if x == -1:
+            left = orange
+        else:
+            left = black
+
+        if y == 1:
+            top = white
+        else:
+            top = black   
+        if y == -1:
+            bottom = yellow
+        else:
+            bottom = black
+
+        if z == 1:
+            front = green
+        else:
+            front = black   
+        if z == -1:
+            back = blue
+        else:
+            back = black
+
+        self.faces = [
+            ([4, 5, 6, 7], front),  # Front
+            ([3, 2, 1, 0], back),   # Back
+            ([3, 7, 6, 2], top),  # Top
+            ([5, 4, 0, 1], bottom), # Bottom 
+            ([6, 5, 1, 2], right),    # Right
+            ([3, 0, 4, 7], left), # Left
+        ]
+
+class Renderer:
+    def __init__(self, screen):
+        self.screen = screen
+        self.screen_width = pygame.display.get_window_size()[0]
+        self.screen_height = pygame.display.get_window_size()[1]
+
+        self.rotation = np.eye(3) # 3x3 Identity Matrix
+
+        cubie_positions =[(-1, -1, -1), (-1, -1,  0), (-1, -1,  1),
+                          (-1,  0, -1), (-1,  1, -1), ( 0, -1, -1),
+                          ( 1, -1, -1), (-1,  0,  0), (-1,  0,  1),
+                          (-1,  1,  0), (-1,  1,  1), ( 0, -1,  0),
+                          ( 0, -1,  1), ( 0,  0, -1), ( 0,  0,  0),
+                          ( 0,  0,  1), ( 0,  1, -1), ( 0,  1,  0),
+                          ( 0,  1,  1), ( 1, -1,  0), ( 1, -1,  1),
+                          ( 1,  0, -1), ( 1,  0,  0), ( 1,  0,  1),
+                          ( 1,  1, -1), ( 1,  1,  0), ( 1,  1,  1)]
+
+        self.cubies = []
+        for position in cubie_positions:
+            self.cubies.append(Cubie(position))
+    
+    def project_point(self, point):
+        x = point[0]
+        y = point[1]
+        z = point[2]
+
+        projected_x = int((x / (camera_distance - z)) * fov + (self.screen_width / 2))
+        projected_y = int((y / (camera_distance - z)) * fov + (self.screen_height / 2))
+
+        return projected_x, projected_y
+    
+    def draw_cube(self):
+        self.screen.fill(bg_colour)
+
+        visible_faces = []
+        for cubie in self.cubies:
+            rotated = np.dot(cubie.vertices, self.rotation.T)
+
+            projected = []
+            for vertex in rotated:
+                projected_point = self.project_point(vertex)
+                projected.append(projected_point)
+            
+            
+            for points, colour in cubie.faces:
+                rotated_points = []
+                for point in points[0:3]:
+                    rotated_point = rotated[point]
+                    rotated_points.append(rotated_point)
+
+                vector1 = rotated_points[1] - rotated_points[0]
+                vector2 = rotated_points[2] - rotated_points[0]
+                normal_vector = np.cross(vector1, vector2)
+
+                if normal_vector[2] <= 0:
+                    continue
+
+                z_total = 0
+                for point in points:
+                    z_total = z_total + rotated[point][2]
+                z_average = z_total / 4
+
+
+                vertices = []
+                for point in points:
+                    projected_point = projected[point]
+                    vertices.append(projected_point)
+                visible_faces.append((colour, vertices, z_average))
+        
+        visible_faces.sort(key=lambda depth: depth[2])
+
+        for colour, vertices, z_average in visible_faces:
+            pygame.draw.polygon(self.screen, colour, vertices)
+        
+        pygame.display.update()
