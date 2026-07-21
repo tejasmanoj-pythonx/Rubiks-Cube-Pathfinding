@@ -43,9 +43,9 @@ def rotate_z(angle):
 
 class Cubie:
     def __init__(self, grid_position):
-        x = grid_position[0]
-        y = grid_position[1]
-        z = grid_position[2]
+        self.x = grid_position[0]
+        self.y = grid_position[1]
+        self.z = grid_position[2]
 
         self.vertices = np.array([
             [-1, -1, -1],
@@ -60,29 +60,29 @@ class Cubie:
 
         self.vertices = (self.vertices * cube_scale) + grid_position
 
-        if x == 1:
+        if self.x == 1:
             right = red
         else:
             right = black
-        if x == -1:
+        if self.x == -1:
             left = orange
         else:
             left = black
 
-        if y == 1:
+        if self.y == 1:
             top = white
         else:
             top = black   
-        if y == -1:
+        if self.y == -1:
             bottom = yellow
         else:
             bottom = black
 
-        if z == 1:
+        if self.z == 1:
             front = green
         else:
             front = black   
-        if z == -1:
+        if self.z == -1:
             back = blue
         else:
             back = black
@@ -170,5 +170,29 @@ class Renderer:
 
         for colour, vertices, z_average in visible_faces:
             pygame.draw.polygon(self.screen, colour, vertices)
-        
         pygame.display.update()
+
+    def get_cubies_face(self, face):
+        face_cubies = []
+    
+        for cubie in self.cubies:
+            x = cubie.x
+            y = cubie.y
+            z = cubie.z
+
+            if face == "right" and x == 1:
+                face_cubies.append(cubie)
+            elif face == "left" and x == -1:
+                face_cubies.append(cubie)
+            elif face == "up" and y == 1:
+                face_cubies.append(cubie)
+            elif face == "down" and y == -1:
+                face_cubies.append(cubie)
+            elif face == "front" and z == 1:
+                face_cubies.append(cubie)
+            elif face == "back" and z == -1:
+                face_cubies.append(cubie)
+        return face_cubies
+
+        
+        
