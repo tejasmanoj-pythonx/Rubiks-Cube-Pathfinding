@@ -117,6 +117,9 @@ class Renderer:
         self.cubies = []
         for position in cubie_positions:
             self.cubies.append(Cubie(position))
+        
+        self.animating = False
+        self.increment_angle = 3
     
     def project_point(self, point):
         x = point[0]
@@ -130,6 +133,7 @@ class Renderer:
     
     def draw_cube(self):
         self.screen.fill(bg_colour)
+        self.animate_face()
 
         visible_faces = []
         for cubie in self.cubies:
@@ -194,5 +198,37 @@ class Renderer:
                 face_cubies.append(cubie)
         return face_cubies
 
+    def start_animating_face(self, face):
+        self.animating = True
+        self.face = face
+        self.face_cubies = self.get_cubies_face(self.face)
+        self.current_angle = 0
+        print(face)
+
+    def animate_face(self):
+        if self.animating == False:
+            return
         
+        if self.current_angle == 90:
+            self.animating = False
+            return
         
+        self.current_angle += self.increment_angle
+
+        angle = math.radians(self.increment_angle)
+
+        for cubie in self.face_cubies:
+            if self.face == "right":
+                rotation = rotate_x(angle)
+            elif self.face == "left":
+                rotation = rotate_x(angle*-1)
+            elif self.face == "up":
+                rotation = rotate_y(angle)
+            elif self.face == "down":
+                rotation = rotate_y(angle*-1)
+            elif self.face == "front":
+                rotation = rotate_z(angle)
+            elif self.face == "back":
+                rotation = rotate_z(angle*-1)
+            
+            cubie.vertices = np.dot(cubie.vertices, rotation.T)
