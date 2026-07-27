@@ -203,14 +203,36 @@ class Renderer:
         self.face = face
         self.face_cubies = self.get_cubies_face(self.face)
         self.current_angle = 0
-        print(face)
 
     def animate_face(self):
         if self.animating == False:
             return
         
-        if self.current_angle == 90:
+        if self.current_angle >= 90:
             self.animating = False
+            
+            angle = math.radians(90)
+
+            for cubie in self.face_cubies:
+                if self.face == "right":
+                    rotation = rotate_x(angle)
+                elif self.face == "left":
+                    rotation = rotate_x(angle*-1)
+                elif self.face == "up":
+                    rotation = rotate_y(angle)
+                elif self.face == "down":
+                    rotation = rotate_y(angle*-1)
+                elif self.face == "front":
+                    rotation = rotate_z(angle)
+                elif self.face == "back":
+                    rotation = rotate_z(angle*-1)
+            
+                old_position = np.array([cubie.x, cubie.y, cubie.z])
+                new_position = np.dot(rotation, old_position)
+                cubie.x = int(round(new_position[0]))
+                cubie.y = int(round(new_position[1]))
+                cubie.z = int(round(new_position[2]))
+
             return
         
         self.current_angle += self.increment_angle
