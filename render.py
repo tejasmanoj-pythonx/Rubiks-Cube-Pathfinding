@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
 import math
+import random
 
 # Colours
 bg_colour = (35, 35, 35)
@@ -119,7 +120,7 @@ class Renderer:
             self.cubies.append(Cubie(position))
         
         self.animating = False
-        self.increment_angle = 3
+        self.choices = []
     
     def project_point(self, point):
         x = point[0]
@@ -132,6 +133,10 @@ class Renderer:
         return projected_x, projected_y
     
     def draw_cube(self):
+        if not self.animating and self.choices:
+            self.start_animating_face(self.choices[0], 9)
+            self.choices.pop(0)
+
         self.screen.fill(bg_colour)
         self.animate_face()
 
@@ -198,11 +203,12 @@ class Renderer:
                 face_cubies.append(cubie)
         return face_cubies
 
-    def start_animating_face(self, face):
+    def start_animating_face(self, face, angle):
         self.animating = True
         self.face = face
         self.face_cubies = self.get_cubies_face(self.face)
         self.current_angle = 0
+        self.increment_angle = angle
 
     def animate_face(self):
         if self.animating == False:
@@ -254,3 +260,9 @@ class Renderer:
                 rotation = rotate_z(angle*-1)
             
             cubie.vertices = np.dot(cubie.vertices, rotation.T)
+    
+    def scramble(self):
+        faces = ["right", "left", "up", "down", "front", "back"]
+        for i in range(10):
+            choice = random.choice(faces)
+            self.choices.append(choice)

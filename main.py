@@ -24,17 +24,19 @@ class Main:
                 elif event.type == pygame.KEYDOWN:
                     if self.renderer.animating == False:
                         if event.key == pygame.K_r or event.key == pygame.K_1:
-                            self.renderer.start_animating_face("right")
+                            self.renderer.start_animating_face("right", 3)
                         elif event.key == pygame.K_l or event.key == pygame.K_2:
-                            self.renderer.start_animating_face("left")
+                            self.renderer.start_animating_face("left", 3)
                         elif event.key == pygame.K_u or event.key == pygame.K_3:
-                            self.renderer.start_animating_face("up")
+                            self.renderer.start_animating_face("up", 3)
                         elif event.key == pygame.K_d or event.key == pygame.K_4:
-                            self.renderer.start_animating_face("down")
+                            self.renderer.start_animating_face("down", 3)
                         elif event.key == pygame.K_f or event.key == pygame.K_5:
-                            self.renderer.start_animating_face("front")
+                            self.renderer.start_animating_face("front", 3)
                         elif event.key == pygame.K_b or event.key == pygame.K_6:
-                            self.renderer.start_animating_face("back")
+                            self.renderer.start_animating_face("back", 3)
+                        elif event.key == pygame.K_s:
+                            self.renderer.scramble()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.drag = True
                     self.mouse_position = pygame.mouse.get_pos()
