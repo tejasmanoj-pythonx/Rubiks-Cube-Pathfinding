@@ -7,7 +7,7 @@ import random      # Used to pick random faces for the scramble() method.
 # Each colour is a tuple that represents an RGB value, three values between 0 and 255.
 # Each value represents how much red, green and blue is mixed together.
 bg_colour = (35, 35, 35) # This is used for the background of the pygame window.
-black = (0, 0, 0) # This is used for colouring tbe faces that are within the cube.
+black = (0, 0, 0) # This is used for colouring the faces that are within the cube.
 
 # These are the standard Rubik's cube colours.
 white = (255, 255, 255)
@@ -26,14 +26,14 @@ camera_distance = 6
 # A larger value would make the cube look bigger on the screen and vice versa.
 fov = 300 
 
-# Each cubie is originally one unit and went from -1 to +1 on each axis making the size 2 (-1 to 0, 0 to +1).
-# So by multiplying by 0.5 we reduce the size to 1 but because they are all 1 unit away from eachother on the grid it gives the effect that the 27 cubies are all combined into 1 big cube.
+# Each cubie is originally two units and went from -1 to +1 on each axis making the size 2 (-1 to 0, 0 to +1).
+# So by multiplying by 0.5 we reduce the size to 1 but because they are all 1 unit away from each other on the grid it gives the effect that the 27 cubies are all combined into 1 big cube.
 # To fix this instead of multiplying by 0.5 we go a little under to leave a gap between them, in this case each cubie would be 0.9 units and each gap is 0.1 units.
 cube_scale = 0.45
 
 # Rotation Matrices
-# When a point is multiplyed by one of these matrices, it returns a new point rotated by that angle upon that respective axis.
-# Each of these functions takes the angle in radians and returns the point as a 3x3 numpy array.
+# When a point is multiplied by one of these matrices, it returns a new point rotated by that angle upon that respective axis.
+# Each of these functions takes the angle in radians and returns the rotation matrix as a 3x3 numpy array.
 # It's used for the mouse drag and face turns.
 
 # Rotating around the X axis moves the cube up and down which is also known as pitch.
@@ -74,7 +74,7 @@ class Cubie:
         self.y = grid_position[1]
         self.z = grid_position[2]
 
-        # There are 8 vertices for each cubie where each certex is a corner of the cubie.
+        # There are 8 vertices for each cubie where each vertex is a corner of the cubie.
         self.vertices = np.array([
             [-1, -1, -1], # left, bottom, back
             [ 1, -1, -1], # right, bottom, back
@@ -87,7 +87,7 @@ class Cubie:
         ])
 
         # Scale the cubie down and then shift it to it's respective grid position.
-        # Numpy treats cube_scaled as a scaler value and applies it individually to every number in the matrix.
+        # Numpy treats cube_scale as a scalar value and applies it individually to every number in the matrix.
         # Numpy also does the addition by adding the tuple grid position, to each row in the matrix. 
         self.vertices = (self.vertices * cube_scale) + grid_position
 
@@ -96,7 +96,7 @@ class Cubie:
         # Inner faces would become black because they are squished between a neighbouring cubie's face, meaning that it wouldn't show on a real cube.
         # Corner cubies would be true for 3 if conditions and hence have 3 colours.
         # Edge cubies would be true for 2 if conditions and hence have 2 colours.
-        # The cubies that are on the cente of each face would be true for 1 if condition and hence have 1 colour.
+        # The cubies that are on the centre of each face would be true for 1 if condition and hence have 1 colour.
         # The cubie in the very centre at 0, 0, 0 wouldn't satisfy any of these which is why it is entirely black.
         if self.x == 1:
             right = red
@@ -128,7 +128,7 @@ class Cubie:
         # self.faces is a list of 6 tuples, one for each face.
         # Each tuple has a list of 4 vertices that are the corners that make up that face, and what colour to draw that face.
         # This specific order of vertices was chosen to when iterated over go around in a circular motion, this is known as the winding order of the face. 
-        # We have to keep the winding order consistent because otherwise later on when we caclulate the normal for each face, the cross product would result in a vertor facing the opposite direction.
+        # We have to keep the winding order consistent because otherwise later on when we caclulate the normal for each face, the cross product would result in a vector facing the opposite direction.
         self.faces = [
             ([4, 5, 6, 7], front),  # Front
             ([3, 2, 1, 0], back),   # Back
@@ -138,7 +138,7 @@ class Cubie:
             ([3, 0, 4, 7], left),   # Left
         ]
 
-# Renderer class does everything thats visual, stores the 27 cubies, projects the 3D points onto the 2D screen, runs back face culling, sorts faces by depth and draws them with pygame.
+# Renderer class does everything that's visual, stores the 27 cubies, projects the 3D points onto the 2D screen, runs back face culling, sorts faces by depth and draws them with pygame.
 class Renderer:
     def __init__(self, screen):
         # Take the window from the Main class along with it's dimensions.
@@ -172,7 +172,7 @@ class Renderer:
         self.animating = False
 
         # self.choices acts as a queue and is a list of face names that are applied in that order.
-        # scramble() fills this list with 10 random faces and draw() will animate it and remove from it, on move at a time, only when the previous is done animating.
+        # scramble() fills this list with 10 random faces and draw_cube() will animate it and remove from it, on move at a time, only when the previous is done animating.
         self.choices = []
     
     # Converts a single 3D point into a 2D screen point.
@@ -196,7 +196,7 @@ class Renderer:
     # Called every frame to redraw the entire cube.
     def draw_cube(self):
         # First check if the scramble queue has anything moves pending and there is nothing being currently animated.
-        # If so then start animating that face which is the first arguement and remove it from the queue.
+        # If so then start animating that face which is the first argument and remove it from the queue.
         # The second arguement is the incremental angle, which controls the speed for the face turns.
         # An angle of 9 means the face is rotating for 10 frames up til 90 degrees.
         # This is faster than the regular 3 degree turns as it can take time for 10 moves to be animated.
@@ -211,8 +211,11 @@ class Renderer:
         visible_faces = []
         for cubie in self.cubies:
             # Apply the rotation from mouse drag to every vertex.
-            # The .T stands for transpose and is used to flip switch the axis.
-            # In this case it is to invert the rotation to so that dragging down actual drags down, dragging right actually drags right and vice versa.
+            # The .T stands for transpose and in this case is used to switch self.rotation from being a matrix meant for column vectors to instead be for row vectors.
+            # self.rotation was meant to be used against a point that would be in the form of a column (3x1).
+            # cubie.vertices stores all 8 points as rows so they are defined as row vectors.
+            # This means when applying the dot product the rotation is reversed because of the mismatch.
+            # Using the transpose we fix this mismatch without changing any values just the fact that it is now in row vector form.
             rotated = np.dot(cubie.vertices, self.rotation.T)
 
             # Project all 8 rotated vertices into 2D screen coordinates.
@@ -224,10 +227,10 @@ class Renderer:
             for points, colour in cubie.faces:
                 # Back face culling is used to skip drawing faces that aren't pointing towards the camera.
                 # It works by first taking a point in a face and the two points directly next to it.
-                # Then find the differences between the adjacent points from the origin point, these are two perpindicular verctors.
-                # After calculating the cross product between these two vectors, we get another vector that is perpindicular to both vectors in the Z dimension.
-                # This new vector is called the norm, when it is pointing towards the camera, the Z would be positive and vice versa.
-                # This means any faces with negative norms don't need to be drawn and are culled out, hence skipped.
+                # Then find the differences between the adjacent points from the origin point, these are two  vectors.
+                # After calculating the cross product between these two vectors, we get another vector that is perpendicular to both vectors in the Z dimension.
+                # This new vector is called the normal, when it is pointing towards the camera, the Z would be positive and vice versa.
+                # This means any faces with negative normals don't need to be drawn and are culled out, hence skipped.
                 rotated_points = []
                 for point in points[0:3]:
                     rotated_point = rotated[point]
@@ -320,7 +323,7 @@ class Renderer:
             # Since pi is a transcendental number, the numbers past the decimal point go on forever.
             # This means when using the rotation matrices the values are only an estimate and are eventually rounded.
             # This causes an issue called floating point error and is not really noticed when using the rotation matrix once.
-            # But if we were to do 30 3 degree turns the ever so slight floating point error would accummulate and break the cube.
+            # But if we were to do 30 3 degree turns the ever so slight floating point error would accumulate and break the cube.
             angle = math.radians(90)
             for cubie in self.face_cubies:
                 if self.face == "right":
@@ -337,7 +340,7 @@ class Renderer:
                     rotation = rotate_z(angle*-1)
             
                 # Apply the 90 degree turn to the cubies old grid position.
-                # Then take that position, apply the rotation matrix and use that as the new grid position.
+                # Then take that position, apply the rotation and use that as the new grid position.
                 # round() is used because all the grid positions need to be whole numbers and negate any issues with floating point.
                 old_position = np.array([cubie.x, cubie.y, cubie.z])
                 new_position = np.dot(rotation, old_position)
@@ -350,7 +353,7 @@ class Renderer:
         # Add the increment angle onto the current animation angle. 
         self.current_angle += self.increment_angle
 
-        # Make a 3 degree rotation matrix.
+        # Make a 3 or 9 degree rotation matrix.
         # This works the same way as the 90 degree turn but instead uses the increment angle of 3 or 9.
         angle = math.radians(self.increment_angle)
         for cubie in self.face_cubies:
@@ -370,7 +373,7 @@ class Renderer:
             # Apply the rotation onto the cubie's vertices.
             # This is permanently changes the vertex position for every frame.
             # Due to the earlier reasons floating point error does occur here.
-            # round() cannot be used to fix this because rotation doesn't neccessarily need to be a whole number.
+            # round() cannot be used to fix this because rotation doesn't necessarily need to be a whole number.
             cubie.vertices = np.dot(cubie.vertices, rotation.T)
     
     # Fills a self.choices with 10 random face names.

@@ -6,7 +6,7 @@ import numpy as np # Used for combining matrices with matrix dot product.
 class Main:
     def __init__(self):
         pygame.init()                                          # Initialise the pygame modules
-        self.screen = pygame.display.set_mode((800, 600))      # Sets the height and width of the pygame window
+        self.screen = pygame.display.set_mode((800, 600))      # Sets the width and height of the pygame window
         pygame.display.set_caption("Rubik's Cube Pathfinding") # Sets the title of the pygame window
         self.clock = pygame.time.Clock()                       # Used to control the frame rate of the window
         self.running = False                                   # Used to start and stop the pygame window
@@ -14,7 +14,7 @@ class Main:
 
         # Used for the mouse drag state. 
         # self.drag becomes true when the left mouse button is pressed and false when it is released.
-        # mouse_position stores where the mouse was on the previous frame so that we can calculate how for it moved on each MOUSEMOTION event.
+        # mouse_position stores where the mouse was on the previous frame so that we can calculate how far it moved on each MOUSEMOTION event.
         self.drag = False
         self.mouse_position = (0, 0)
 
@@ -28,7 +28,7 @@ class Main:
     
                 elif event.type == pygame.KEYDOWN: # Check for any keypress.
                     # Only allow these key presses if there is nothing being animated.
-                    # If it was allowed the cubies would move around into eachother overlapping and deform the cube.
+                    # If it was allowed the cubies would move around into each other overlapping and deform the cube.
                     # The start_animating_face() method takes in what face to be animated and the incremental angle for each frame.
                     # The incremental angle is the amount all the cubies are being moved in the direction of the rotation.
                     # A greater angle means each frame the distance moved is further giving the effect that it is moving faster.
@@ -70,7 +70,7 @@ class Main:
                         # Find the difference between the current x and y from the starting x and y.
                         # x_difference is the horizontal distance so a positive x moves rightwards and vice versa.
                         # y_difference is the vertical distance but due to pygame's positive y value moving downwards, the vertical movement is inverted.
-                        # To counteract this we multiple the y value by -1 to flip the axis so that positive y moves up and vice versa.
+                        # To counteract this we multiply the y value by -1 to flip the axis so that positive y moves up and vice versa.
                         x_difference = x_current - self.mouse_position[0]
                         y_difference = (y_current - self.mouse_position[1])*-1
 
@@ -87,7 +87,7 @@ class Main:
                         y_rotated = render.rotate_y(y_angle)
                         combined = np.dot(x_rotated, y_rotated)
 
-                        # Multiple the combined rotation matrices into the render's already accumulated rotation.
+                        # Multiply the combined rotation matrices into the render's already accumulated rotation.
                         self.renderer.rotation = np.dot(combined, self.renderer.rotation)
                         
                         # Make this mouse position the new starting point for the next iteration.
