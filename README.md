@@ -80,3 +80,12 @@ The algorithm is named after a painter usually creates an artwork by painting th
 An exact distance isn't really needed, really only a number that lets us compare the faces against eachother. From the projection formula we know that camera_z - z gives us the distance from the camera. This means that a face with a larger z_coordinate would be closer to the camera, and a face with a smaller z coordinate would be further.<br><br>
 Since each face has 4 vertices, and they don't necessarily have to share the exact same z value after being rotated, we could take the average of all of the z values and use that number as a representation of the depth for that face.<br>
 Depth = (z0 + z1 + z2 + z3) / 4<br><br>
+
+**How to Animate Face Rotations?**<br>
+Idea<br>
+User will press a key like L for the left face to turn, then I will need to find the 9 cubies that are on that face do this by using the fact that either their x, y, or z will all have the same value.<br> Then for every frame rotate all the vertices by a small angle until it reaches 90 degrees.<br>
+
+Steps to Implement<br>
+1. Map all the keys to their respective faces like U for up and so on.
+2. Find the 9 cubies that are on that face so for up, it would be where grid_position[1] == 1.
+3. For every frame, apply a small rotation matrix, maybe like 2 or 3 degrees, to the cubies vertices, and then keep accumalating this rotation until 90 degrees is reached
